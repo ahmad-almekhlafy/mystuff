@@ -15,6 +15,11 @@ checkstyle:
 
 build:
   stage: build
+
+  tags:
+    - gradle
+    - build
+
   image: gradle:jdk8
 
   script:
@@ -23,6 +28,10 @@ build:
 test:
   stage: test
   image: gradle:jdk8
+
+  tags:
+    - gradle
+    - test
 
   script:
     - gradle test
