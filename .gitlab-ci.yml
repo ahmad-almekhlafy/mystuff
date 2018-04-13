@@ -20,14 +20,14 @@ build:
     - gradle
     - build
 
-  image: gradle:jdk8
+  image: gradle:jdk8-alpine
 
   script:
     - gradle build
 
 test:
   stage: test
-  image: gradle:jdk8
+  image: gradle:jdk8-alpine
 
   tags:
     - gradle
