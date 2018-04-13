@@ -1,0 +1,28 @@
+stages:
+  - stylecheck
+  - build
+  - test
+
+checkstyle:
+  stage: stylecheck
+  image: $CI_REGISTRY/abgabesystem/checkstyle:latest
+
+  tags:
+    - stylecheck
+
+  script:
+    - Dummy Script 
+
+build:
+  stage: build
+  image: gradle:jdk8
+
+  script:
+    - gradle build
+
+test:
+  stage: test
+  image: gradle:jdk8
+
+  script:
+    - gradle test
