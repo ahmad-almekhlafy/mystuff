@@ -1,0 +1,83 @@
+[33mcommit 2d6bdc6cb02926a6c48a19cdb8a4817be97d9d73[m[33m ([m[1;36mHEAD -> [m[1;32mmaster[m[33m)[m
+Author: ahmad <a.al-mekhlafy@tu-braunschweig.de>
+Date:   Thu Apr 19 22:28:09 2018 +0200
+
+    Last HelloWorld
+
+[33mcommit 16bc58f781fd8d75cb2ab7c611dfd2a1ffbef24a[m[33m ([m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Author: ahmad <a.al-mekhlafy@tu-braunschweig.de>
+Date:   Thu Apr 19 22:25:50 2018 +0200
+
+    Last HelloWorld
+
+[33mcommit d9dce73bd3eb5451804fa7d7a17022c1eb89a7c4[m
+Author: ahmad <a.al-mekhlafy@tu-braunschweig.de>
+Date:   Thu Apr 19 22:21:56 2018 +0200
+
+    Hello World
+
+[33mcommit 9f304e102f21e46f4f6212c74d91294f937af532[m
+Author: ahmad <ahmad.almekhlafy@gmail.com>
+Date:   Thu Apr 19 21:05:27 2018 +0200
+
+    hallo
+
+[33mcommit cf2b65878f0208c8864caba69e92e8684e63b9b0[m
+Author: ahmad <ahmad.almekhlafy@gmail.com>
+Date:   Thu Apr 19 21:04:04 2018 +0200
+
+    test
+
+[33mcommit dd632b8d41dbd0b5235be5f71adb2dc215838307[m
+Author: ahmad <ahmad.almekhlafy@gmail.com>
+Date:   Thu Apr 19 21:02:10 2018 +0200
+
+    hkhkh
+
+[33mcommit 1abea6046acb2acb4ee165b6120f9d7a078ceb90[m
+Author: ahmad <ahmad.almekhlafy@gmail.com>
+Date:   Thu Apr 19 20:56:25 2018 +0200
+
+    1.txt
+
+[33mcommit 292ed1734210dde3c5a117f2633ba07bf7db7cda[m
+Author: Ahmad Al-Mekhlafy <a.al-mekhlafy@tu-braunschweig.de>
+Date:   Thu Apr 19 19:51:15 2018 +0200
+
+    Add new directory
+
+[33mcommit 1953dcefbb7f209ac39463f266f0c360a2235054[m
+Author: Tim Schubert <tim.schubert@tu-bs.de>
+Date:   Thu Apr 19 16:07:47 2018 +0200
+
+    Add script for pulling from upstream
+
+[33mcommit 2420d7145bd1432c8207a776b16e3d5f2da9408c[m
+Author: Tim Schubert <tim.schubert@tu-bs.de>
+Date:   Fri Apr 13 13:32:38 2018 +0200
+
+    Add CI config and gradle directory to gitignore
+
+[33mcommit de3eadf1393aa3a956414ce852049c0576dd1d39[m
+Author: Tim Schubert <tim.schubert@tu-braunschweig.de>
+Date:   Fri Apr 13 13:22:05 2018 +0200
+
+    Use alpine image
+
+[33mcommit 48169a51616e5f6d84e8c9324951ad4457bcc270[m
+Author: Tim Schubert <tim.schubert@tu-braunschweig.de>
+Date:   Fri Apr 13 13:19:34 2018 +0200
+
+    Tag build and test stages
+
+[33mcommit f3ff60654058cb21c6f8b9392e2e4af642d34f65[m
+Author: Tim Schubert <tim.schubert@tu-bs.de>
+Date:   Fri Apr 13 13:08:50 2018 +0200
+
+    Add gitignore and CI
+
+[33mcommit f63cd01e653b7bb369a77744c62a50b65bbe0cda[m[33m ([m[1;33mtag: test[m[33m)[m
+Author: Administrator <admin@example.com>
+Date:   Thu Apr 12 05:49:42 2018 +0200
+
+    Initial commit
