@@ -1,1 +1,1 @@
-README
+Die Hausaufgaben sind im Ordner Java gespeichert.
