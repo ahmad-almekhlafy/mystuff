@@ -31,8 +31,11 @@ class  Drachenkampf {
 					sc.next();
 					System.out.println("Der Held kann mit Pfeil und Bogen (1) oder mit dem Schwert (2) angreifen.");
 				}
-				System.out.println("Der Held kann mit Pfeil und Bogen (1) oder mit dem Schwert (2) angreifen.");
+				
 				Waffe = sc.nextInt();
+				if (Waffe != 1 && Waffe != 2) {
+					System.out.println("Der Held kann mit Pfeil und Bogen (1) oder mit dem Schwert (2) angreifen.");
+				}
 			} while ( Waffe != 1 && Waffe != 2 );
 
 
@@ -98,6 +101,8 @@ class  Drachenkampf {
 		} else {
 			System.out.println("Der Drache wurde besiegt. Hurra.");
 		}
+
+		
 	}
 
 
