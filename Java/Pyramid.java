@@ -6,11 +6,10 @@ class Pyramid {
 		int b = 1;
 		int c = 0;
 		int d = 5;
-		int e = 0;
-
+		
 		while (a < 6) {
 			
-			while (d > e) {
+			while (d > 0) {
 				System.out.print(" ");
 				d--;
 			}
@@ -24,8 +23,7 @@ class Pyramid {
 			a++;
 			b += 2;
 			c = 0;
-			e++;
-			d = 5;
+			d = 5-a;
 			
 		}
 	}
