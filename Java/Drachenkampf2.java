@@ -21,7 +21,7 @@ class  Drachenkampf {
 
 			System.out.println("Der Held kann mit Pfeil und Bogen (1) oder mit dem Schwert (2) angreifen.");
 			String Input = sc.nextLine();
-	String number = "10";
+	
 
 
 			/**
