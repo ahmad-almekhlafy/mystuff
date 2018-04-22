@@ -2,16 +2,14 @@ class Pyramid {
 
 
 	public static void main(String[] args) {
-		int a = 0;
 		int b = 1;
 		int c = 0;
-		int d = 5;
 		
-		while (a < 6) {
+		
+		for (int a = 0;  a < 6; a++) {
 			
-			while (d > 0) {
+			for (int d = 5; d > 0; d--) {
 				System.out.print(" ");
-				d--;
 			}
 
 			while (c < b) {
@@ -20,10 +18,10 @@ class Pyramid {
 			}
 
 			System.out.println();
-			a++;
+			
 			b += 2;
 			c = 0;
-			d = 5-a;
+			d = 4-a;
 			
 		}
 	}
