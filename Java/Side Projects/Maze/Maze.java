@@ -21,6 +21,7 @@ class Maze extends JPanel implements ActionListener {
     int startX = r.nextInt(width / cellSize);
     int startY = r.nextInt(height / cellSize);
     //shitshitishf;
+    //tetsef;
     public static void main(String[] args) {
         new Maze();
     }
