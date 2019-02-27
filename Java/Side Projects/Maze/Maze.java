@@ -1,5 +1,3 @@
-import javax.swing.JFrame;
-import javax.swing.JPanel;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Stack;
@@ -27,7 +25,7 @@ class Maze extends JPanel implements ActionListener {
     Maze() {
         JFrame frame = new JFrame("Maze");
         frame.setResizable(false);
-        setPreferredSize(new Dimension(width - wallSize, height - wallSize));
+        setPreferredSize(new Dimension(width-wallSize, height-wallSize));
         frame.setContentPane(this);
         frame.pack();
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -79,7 +77,7 @@ class Maze extends JPanel implements ActionListener {
 
     public void paintComponent(Graphics g) {
         g.setColor(Color.BLACK);
-        g.fillRect(0, 0, width, height);
+        g.fillRect(0, 0, width-wallSize, height-wallSize);
         for (int h = 0; h < height / cellSize; h++) {
             for (int w = 0; w < width / cellSize; w++) {
                 cells.get(h).get(w).draw(g);
