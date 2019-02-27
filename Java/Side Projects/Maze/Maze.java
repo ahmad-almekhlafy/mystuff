@@ -6,11 +6,10 @@ import javax.swing.*;
 import java.awt.event.*;
 
 class Maze extends JPanel implements ActionListener {
-    Timer timer = new Timer(100, this); 
+    Timer timer = new Timer(0, this);
     static ArrayList<ArrayList<cell>> cells;
     static ArrayList<wall> walls = new ArrayList<>();
     Stack<cell> stack = new Stack<cell>();
-
     static final int cellSize = 20;
     static final int wallSize = 10;
     static final int height = 500;
@@ -18,6 +17,7 @@ class Maze extends JPanel implements ActionListener {
     static Random r = new Random();
     int startX = r.nextInt(width / cellSize);
     int startY = r.nextInt(height / cellSize);
+
     public static void main(String[] args) {
         new Maze();
     }
@@ -25,13 +25,20 @@ class Maze extends JPanel implements ActionListener {
     Maze() {
         JFrame frame = new JFrame("Maze");
         frame.setResizable(false);
-        setPreferredSize(new Dimension(width-wallSize, height-wallSize));
+        setPreferredSize(new Dimension(width - wallSize, height - wallSize));
         frame.setContentPane(this);
         frame.pack();
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        JMenuBar menuBar = new JMenuBar();
+        JMenu menu = new JMenu("Do...");
+        JMenuItem newMaze = new JMenuItem("Gen. New Maze");
+        newMaze.addActionListener(this);
+        menu.add(newMaze);
+        menuBar.add(menu);
+        frame.setJMenuBar(menuBar);
         frame.setVisible(true);
         cells = new ArrayList<>();
-        int id=0;
+        int id = 0;
         for (int h = 0; h < height / cellSize; h++) {
             cells.add(new ArrayList<>());
             for (int w = 0; w < width / cellSize; w++) {
@@ -63,21 +70,36 @@ class Maze extends JPanel implements ActionListener {
     }
 
     public void actionPerformed(ActionEvent e) {
-
-        if (!stack.isEmpty()) {
-            cell nextCell = stack.peek().visitRandomNeighbour();
-            if (nextCell.id == stack.peek().id) {
-                stack.pop();
-            } else {
-                stack.push(nextCell);
+        if (e.getActionCommand() == (("Gen. New Maze"))) {
+            startX = r.nextInt(width / cellSize);
+            startY = r.nextInt(height / cellSize);
+            stack.push(cells.get(startY).get(startX));
+            for (int h = 0; h < height / cellSize; h++) {
+                for (int w = 0; w < width / cellSize; w++) {
+                    cells.get(h).get(w).isVisited=false;
+                }
             }
+            for (int i = 0; i < walls.size(); i++) {
+                walls.get(i).isBroken=false;
+            }
+            
+            timer.start();
+        } else {
+            if (!stack.isEmpty()) {
+                cell nextCell = stack.peek().visitRandomNeighbour();
+                if (nextCell.id == stack.peek().id) {
+                    stack.pop();
+                } else {
+                    stack.push(nextCell);
+                }
+            }
+            repaint();
         }
-        repaint();
     }
 
     public void paintComponent(Graphics g) {
         g.setColor(Color.BLACK);
-        g.fillRect(0, 0, width-wallSize, height-wallSize);
+        g.fillRect(0, 0, width - wallSize, height - wallSize);
         for (int h = 0; h < height / cellSize; h++) {
             for (int w = 0; w < width / cellSize; w++) {
                 cells.get(h).get(w).draw(g);
@@ -88,8 +110,10 @@ class Maze extends JPanel implements ActionListener {
             walls.get(i).draw(g);
         }
         if (!stack.isEmpty()) {
-            g.setColor(new Color(255, 51 , 51));
+            g.setColor(new Color(255, 51, 51));
             g.fillRect(stack.peek().xCoor, stack.peek().yCoor, 10, 10);
+        } else {
+            timer.stop();
         }
     }
 
