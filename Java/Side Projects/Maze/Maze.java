@@ -8,7 +8,7 @@ import javax.swing.*;
 import java.awt.event.*;
 
 class Maze extends JPanel implements ActionListener {
-    Timer timer = new Timer(100, this);
+    Timer timer = new Timer(100, this); 
     static ArrayList<ArrayList<cell>> cells;
     static ArrayList<wall> walls = new ArrayList<>();
     Stack<cell> stack = new Stack<cell>();
@@ -20,6 +20,7 @@ class Maze extends JPanel implements ActionListener {
     static Random r = new Random();
     int startX = r.nextInt(width / cellSize);
     int startY = r.nextInt(height / cellSize);
+    //new branch;
     public static void main(String[] args) {
         new Maze();
     }
