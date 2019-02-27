@@ -5,7 +5,7 @@ import java.util.Random;
 import javax.swing.*;
 import java.awt.event.*;
 
-class Maze extends JPanel implements ActionListener {
+class Maze extends JPanel implements ActionListener, MouseMotionListener {
     Timer timer = new Timer(0, this);
     static ArrayList<ArrayList<cell>> cells;
     static ArrayList<wall> walls = new ArrayList<>();
@@ -27,15 +27,26 @@ class Maze extends JPanel implements ActionListener {
         frame.setResizable(false);
         setPreferredSize(new Dimension(width - wallSize, height - wallSize));
         frame.setContentPane(this);
-        frame.pack();
+
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         JMenuBar menuBar = new JMenuBar();
         JMenu menu = new JMenu("Do...");
+        JMenuItem solveMaze = new JMenuItem("Solve");
+        JMenuItem findPath = new JMenuItem("Find a path from cell x to cell y");
         JMenuItem newMaze = new JMenuItem("Gen. New Maze");
+        JToolTip cellId = new JToolTip();
+        this.addMouseMotionListener(this);
+        frame.add(cellId);
         newMaze.addActionListener(this);
+        solveMaze.addActionListener(this);
+        menu.add(solveMaze);
         menu.add(newMaze);
+        menu.add(findPath);
         menuBar.add(menu);
+
         frame.setJMenuBar(menuBar);
+
+        frame.pack();
         frame.setVisible(true);
         cells = new ArrayList<>();
         int id = 0;
@@ -76,13 +87,13 @@ class Maze extends JPanel implements ActionListener {
             stack.push(cells.get(startY).get(startX));
             for (int h = 0; h < height / cellSize; h++) {
                 for (int w = 0; w < width / cellSize; w++) {
-                    cells.get(h).get(w).isVisited=false;
+                    cells.get(h).get(w).isVisited = false;
                 }
             }
             for (int i = 0; i < walls.size(); i++) {
-                walls.get(i).isBroken=false;
+                walls.get(i).isBroken = false;
             }
-            
+
             timer.start();
         } else {
             if (!stack.isEmpty()) {
@@ -95,6 +106,7 @@ class Maze extends JPanel implements ActionListener {
             }
             repaint();
         }
+
     }
 
     public void paintComponent(Graphics g) {
@@ -113,8 +125,31 @@ class Maze extends JPanel implements ActionListener {
             g.setColor(new Color(255, 51, 51));
             g.fillRect(stack.peek().xCoor, stack.peek().yCoor, 10, 10);
         } else {
-            timer.stop();
+
+            if (timer.isRunning()) {
+
+                timer.stop();
+            }
         }
+    }
+
+    public void mouseMoved(MouseEvent e) {
+        Point mouseLocation = e.getPoint();
+    
+        if ((((mouseLocation.x/10)%2)==0) && (((mouseLocation.y/10)%2)==0)) {
+            int xCoor = (mouseLocation.x/10)*10;
+            int yCoor = (mouseLocation.y/10)*10;
+            int cellId = (yCoor/20) * 45 +(xCoor/20);
+            this.setToolTipText("Cell " + cellId );
+        }else{
+            this.setToolTipText(null);
+        }
+     
+        
+    }
+
+    public void mouseDragged(MouseEvent e) {
+
     }
 
     class cell {
