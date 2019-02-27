@@ -33,7 +33,7 @@ class Maze extends JPanel implements ActionListener {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setVisible(true);
         cells = new ArrayList<>();
-
+        int id=0;
         for (int h = 0; h < height / cellSize; h++) {
             cells.add(new ArrayList<>());
             for (int w = 0; w < width / cellSize; w++) {
