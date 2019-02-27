@@ -20,13 +20,10 @@ class Maze extends JPanel implements ActionListener {
     static Random r = new Random();
     int startX = r.nextInt(width / cellSize);
     int startY = r.nextInt(height / cellSize);
-<<<<<<< HEAD
     //new branch;
     //master;
-=======
     //shitshitishf;
     //tetsef;
->>>>>>> testing-branching
     public static void main(String[] args) {
         new Maze();
     }
