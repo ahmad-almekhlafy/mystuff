@@ -4,6 +4,7 @@ import java.util.Stack;
 import java.util.Random;
 import javax.swing.*;
 import java.awt.event.*;
+int testingonelasttime;
 
 class Maze extends JPanel implements ActionListener, MouseMotionListener {
     Timer timer = new Timer(0, this);
