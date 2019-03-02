@@ -17,7 +17,7 @@ class Maze extends JPanel implements ActionListener, MouseMotionListener {
     static Random r = new Random();
     int startX = r.nextInt(width / cellSize);
     int startY = r.nextInt(height / cellSize);
-    int testshit;
+    
 
     public static void main(String[] args) {
         new Maze();
