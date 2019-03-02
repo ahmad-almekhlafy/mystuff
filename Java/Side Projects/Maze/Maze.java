@@ -10,6 +10,7 @@ class Maze extends JPanel implements ActionListener, MouseMotionListener {
     static ArrayList<ArrayList<cell>> cells;
     static ArrayList<wall> walls = new ArrayList<>();
     Stack<cell> stack = new Stack<cell>();
+    Stack<cell> stack2 = new Stack<cell>();
     static final int cellSize = 20;
     static final int wallSize = 10;
     static final int height = 500;
@@ -17,6 +18,9 @@ class Maze extends JPanel implements ActionListener, MouseMotionListener {
     static Random r = new Random();
     int startX = r.nextInt(width / cellSize);
     int startY = r.nextInt(height / cellSize);
+    JTextField cell1 = new JTextField();
+    JTextField cell2 = new JTextField();
+    int a;
 
     public static void main(String[] args) {
         new Maze();
@@ -39,6 +43,7 @@ class Maze extends JPanel implements ActionListener, MouseMotionListener {
         frame.add(cellId);
         newMaze.addActionListener(this);
         solveMaze.addActionListener(this);
+        findPath.addActionListener(this);
         menu.add(solveMaze);
         menu.add(newMaze);
         menu.add(findPath);
@@ -88,14 +93,43 @@ class Maze extends JPanel implements ActionListener, MouseMotionListener {
             for (int h = 0; h < height / cellSize; h++) {
                 for (int w = 0; w < width / cellSize; w++) {
                     cells.get(h).get(w).isVisited = false;
+                    cells.get(h).get(w).secondVisit=false;
                 }
             }
             for (int i = 0; i < walls.size(); i++) {
                 walls.get(i).isBroken = false;
+                walls.get(i).isVisited=false;
             }
 
             timer.start();
+        } else if (e.getActionCommand() == (("Find a path from cell x to cell y"))) {
+
+            Object[] message = { "Start Cell:", cell1, "Destination Cell:", cell2 };
+            JOptionPane input = new JOptionPane(message);
+            input.showConfirmDialog(this, message, "Enter Cells' Numbers:", JOptionPane.OK_CANCEL_OPTION);
+
+            if ((!cell1.getText().equals("")) && (!cell2.getText().equals(""))) {
+                cell startCell = cells.get((Integer.parseInt(cell1.getText()) / 45))
+                        .get((Integer.parseInt(cell1.getText()) % 45));
+
+                for (int h = 0; h < height / cellSize; h++) {
+                    for (int w = 0; w < width / cellSize; w++) {
+                        cells.get(h).get(w).isVisited = false;
+                        cells.get(h).get(w).secondVisit = true;
+                    }
+                }
+                walls.forEach((n) -> {
+
+                    n.isVisited = false;
+                });
+                startCell.isVisited = true;
+                stack2.push(startCell);
+                
+                timer.start();
+
+            }
         } else {
+
             if (!stack.isEmpty()) {
                 cell nextCell = stack.peek().visitRandomNeighbour();
                 if (nextCell.id == stack.peek().id) {
@@ -104,14 +138,47 @@ class Maze extends JPanel implements ActionListener, MouseMotionListener {
                     stack.push(nextCell);
                 }
             }
+
+            if (!stack2.isEmpty()) {
+                cell nextCell = stack2.peek().visitConnectedNeighnour();
+                if (nextCell.id == stack2.peek().id) {
+
+                    stack2.peek().secondVisit = false;
+                    walls.forEach((n) -> {
+                        if (stack2.size() > 1) {
+                            if (((n.idCell1 == stack2.get(stack2.size() - 2).id) && (n.idCell2 == stack2.peek().id))
+                                    || ((n.idCell2 == stack2.get(stack2.size() - 2).id)
+                                            && (n.idCell1 == stack2.peek().id)))
+
+                                n.isVisited = false;
+                        }
+                    });
+
+                    stack2.pop();
+                } else if (nextCell.id == cells.get((Integer.parseInt(cell2.getText()) / 45))
+                        .get((Integer.parseInt(cell2.getText()) % 45)).id) {
+                    stack2.push(nextCell);
+                    cell1 = new JTextField();
+                   cell2 = new JTextField();
+
+                    timer.stop();
+                    System.out.println("stopped");
+
+                } else {
+                    stack2.push(nextCell);
+                }
+            }
+
             repaint();
         }
 
     }
 
     public void paintComponent(Graphics g) {
+
         g.setColor(Color.BLACK);
         g.fillRect(0, 0, width - wallSize, height - wallSize);
+
         for (int h = 0; h < height / cellSize; h++) {
             for (int w = 0; w < width / cellSize; w++) {
                 cells.get(h).get(w).draw(g);
@@ -121,31 +188,30 @@ class Maze extends JPanel implements ActionListener, MouseMotionListener {
         for (int i = 0; i < walls.size(); i++) {
             walls.get(i).draw(g);
         }
+
         if (!stack.isEmpty()) {
             g.setColor(new Color(255, 51, 51));
             g.fillRect(stack.peek().xCoor, stack.peek().yCoor, 10, 10);
-        } else {
+        }
 
-            if (timer.isRunning()) {
-
-                timer.stop();
-            }
+        if ((stack.isEmpty()) && (stack2.isEmpty()) && timer.isRunning()) {
+            System.out.println("stopped");
+            timer.stop();
         }
     }
 
     public void mouseMoved(MouseEvent e) {
         Point mouseLocation = e.getPoint();
-    
-        if ((((mouseLocation.x/10)%2)==0) && (((mouseLocation.y/10)%2)==0)) {
-            int xCoor = (mouseLocation.x/10)*10;
-            int yCoor = (mouseLocation.y/10)*10;
-            int cellId = (yCoor/20) * 45 +(xCoor/20);
-            this.setToolTipText("Cell " + cellId );
-        }else{
+
+        if ((((mouseLocation.x / 10) % 2) == 0) && (((mouseLocation.y / 10) % 2) == 0)) {
+            int xCoor = (mouseLocation.x / 10) * 10;
+            int yCoor = (mouseLocation.y / 10) * 10;
+            int cellId = (yCoor / 20) * 45 + (xCoor / 20);
+            this.setToolTipText("Cell " + cellId);
+        } else {
             this.setToolTipText(null);
         }
-     
-        
+
     }
 
     public void mouseDragged(MouseEvent e) {
@@ -160,6 +226,7 @@ class Maze extends JPanel implements ActionListener, MouseMotionListener {
         int visitedNeighbours;
         ArrayList<cell> neighbours = new ArrayList<cell>();
         int id;
+        boolean secondVisit;
 
         cell(int xCoor, int yCoor, int size, int id) {
             this.size = size;
@@ -218,15 +285,56 @@ class Maze extends JPanel implements ActionListener, MouseMotionListener {
             return childCell;
         }
 
+        public cell visitConnectedNeighnour() {
+            ArrayList<cell> connectedNeighbours = new ArrayList<cell>();
+            for (int i = 0; i < walls.size(); i++) {
+                if (walls.get(i).idCell1 == this.id) {
+                    if (walls.get(i).isBroken)
+                        connectedNeighbours.add(cells.get((walls.get(i).idCell2 / 45)).get(walls.get(i).idCell2 % 45));
+                } else if (walls.get(i).idCell2 == this.id) {
+                    if (walls.get(i).isBroken)
+                        connectedNeighbours.add(cells.get((walls.get(i).idCell1 / 45)).get(walls.get(i).idCell1 % 45));
+                }
+            }
+
+            ArrayList<cell> unvisitedNeighbours = new ArrayList<cell>();
+            for (int i = 0; i < connectedNeighbours.size(); i++) {
+                if (!connectedNeighbours.get(i).isVisited)
+                    unvisitedNeighbours.add(connectedNeighbours.get(i));
+            }
+            if (unvisitedNeighbours.isEmpty())
+                return this;
+
+            int randomNeighbour = r.nextInt(unvisitedNeighbours.size());
+            cell childCell = unvisitedNeighbours.get(randomNeighbour);
+            childCell.isVisited = true;
+            walls.forEach((n) -> {
+                if (((n.idCell1 == childCell.id) && (n.idCell2 == this.id))
+                        || ((n.idCell2 == childCell.id) && (n.idCell1 == this.id)))
+
+                    n.isVisited = true;
+            });
+
+            return childCell;
+
+        }
+
         public void draw(Graphics g) {
 
-            if (isVisited) {
+            if ((isVisited) && (!secondVisit)) {
                 g.setColor(Color.WHITE);
-            } else {
+
+            } else if ((isVisited) && (secondVisit)) {
+                g.setColor(new Color(0, 153, 0));
+
+            } else if ((!isVisited) && (!secondVisit)) {
                 g.setColor(Color.BLACK);
+
+            } else if ((!isVisited) && (secondVisit)) {
+                g.setColor(Color.WHITE);
+
             }
             g.fillRect(xCoor, yCoor, size, size);
-
         }
 
         public void lookForNeighbours() {
@@ -252,6 +360,7 @@ class Maze extends JPanel implements ActionListener, MouseMotionListener {
         boolean isVertical;
         int idCell1;
         int idCell2;
+        boolean isVisited = false;
 
         wall(int xCoor, int yCoor, int size, boolean isVertical, int idCell1, int idCell2) {
             this.size = size;
@@ -264,8 +373,11 @@ class Maze extends JPanel implements ActionListener, MouseMotionListener {
 
         public void draw(Graphics g) {
 
-            if (isBroken) {
+            if ((isBroken) && (!isVisited)) {
                 g.setColor(Color.WHITE);
+            } else if ((isBroken) && (isVisited)) {
+                g.setColor(new Color(0, 153, 0));
+
             } else {
                 g.setColor(Color.BLACK);
             }
@@ -276,11 +388,17 @@ class Maze extends JPanel implements ActionListener, MouseMotionListener {
             } else if ((!isVertical) && (!isBroken)) {
                 // g.setColor(Color.BLACK);
                 // g.fillRect(xCoor, yCoor, cellSize, size);
-            } else if ((isVertical) && (isBroken)) {
+            } else if ((isVertical) && (isBroken) && (!isVisited)) {
                 g.setColor(Color.WHITE);
                 g.fillRect(xCoor, yCoor, size, cellSize - size);
-            } else {
+            } else if ((!isVertical) && (isBroken) && (!isVisited)) {
                 g.setColor(Color.WHITE);
+                g.fillRect(xCoor, yCoor, cellSize - size, size);
+            } else if ((isVertical) && (isBroken) && (isVisited)) {
+                g.setColor(new Color(0, 153, 0));
+                g.fillRect(xCoor, yCoor, size, cellSize - size);
+            } else if ((!isVertical) && (isBroken) && (isVisited)) {
+                g.setColor(new Color(0, 153, 0));
                 g.fillRect(xCoor, yCoor, cellSize - size, size);
             }
 
