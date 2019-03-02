@@ -20,7 +20,7 @@ class Maze extends JPanel implements ActionListener, MouseMotionListener {
     int startY = r.nextInt(height / cellSize);
     JTextField cell1 = new JTextField();
     JTextField cell2 = new JTextField();
-
+    int a; //testing
     public static void main(String[] args) {
         new Maze();
     }
