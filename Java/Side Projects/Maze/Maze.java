@@ -152,7 +152,7 @@ class Maze extends JPanel implements ActionListener, MouseMotionListener {
                                 n.isVisited = false;
                         }
                     });
-
+                  
                     stack2.pop();
                 } else if (nextCell.id == cells.get((Integer.parseInt(cell2.getText()) / 45))
                         .get((Integer.parseInt(cell2.getText()) % 45)).id) {
