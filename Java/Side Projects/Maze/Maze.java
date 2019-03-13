@@ -13,7 +13,7 @@ class Maze extends JPanel implements ActionListener, MouseMotionListener {
 
     int cellsPerRow = width / (cellSize + wallSize);
     int numOfRows = height / (cellSize + wallSize);
-    Timer timer = new Timer(0, this);
+    Timer timer = new Timer(30, this);
     Random r = new Random();
 
     JFrame frame = new JFrame("Maze");
@@ -25,8 +25,8 @@ class Maze extends JPanel implements ActionListener, MouseMotionListener {
 
     ArrayList<wall> walls = new ArrayList<>();
     ArrayList<cell> cells = new ArrayList<>();
-    Stack<cell> stack = new Stack<cell>();
-    Stack<cell> stack2 = new Stack<cell>();
+    Stack<cell> stack = new Stack<cell>(); // used for generating mazes
+    Stack<cell> stack2 = new Stack<cell>(); // used for solving mazes
 
     int startId;
     JTextField cell1 = new JTextField();
@@ -91,9 +91,12 @@ class Maze extends JPanel implements ActionListener, MouseMotionListener {
             }
         }
 
+        // after creating the cells, find the neighbors of each cell
         for (int i = 0; i < cellsPerRow * numOfRows; i++)
             cells.get(i).lookForNeighbors();
 
+        // choose a random cell and start the depth first search with it being the cell
+        // at the top of the stack
         startId = r.nextInt(cells.size());
         cells.get(startId).firstVisit = true;
         stack.push(cells.get(startId));
@@ -154,8 +157,9 @@ class Maze extends JPanel implements ActionListener, MouseMotionListener {
                 timer.start();
             }
 
-        } else {
+        } else { // if timer is running
 
+            // if a maze is being generated
             if (!stack.isEmpty()) {
                 cell nextCell = stack.peek().visitRandomNeighbor();
                 if (nextCell.id == stack.peek().id) {
@@ -165,6 +169,7 @@ class Maze extends JPanel implements ActionListener, MouseMotionListener {
                 }
             }
 
+            // if a maze is being solved
             if (!stack2.isEmpty()) {
                 cell nextCell = stack2.peek().visitConnectedNeighbor();
                 if (nextCell.id == stack2.peek().id) {
@@ -201,11 +206,15 @@ class Maze extends JPanel implements ActionListener, MouseMotionListener {
 
         });
 
+        // color the cell at the top of the stack with the color red, so it looks cool
+        // and we know what is actually happening
         if (!stack.isEmpty()) {
             g.setColor(new Color(255, 51, 51));
             g.fillRect(stack.peek().xCoor, stack.peek().yCoor, cellSize, cellSize);
         }
 
+        // if both stacks are empty (nothing is being done), stop timer, so that
+        // unnecessary actions fired by it are no longer fired
         if ((stack.isEmpty()) && (stack2.isEmpty()) && timer.isRunning()) {
             menu.setEnabled(true);
             timer.stop();
@@ -261,8 +270,8 @@ class Maze extends JPanel implements ActionListener, MouseMotionListener {
             return randomNeighbor;
         }
 
+        // a neighbor is connected when the wall separating it from this cell is broken
         public cell visitConnectedNeighbor() {
-
             ArrayList<cell> connectedNeighbors = new ArrayList<cell>();
 
             for (int i = 0; i < neighbors.size(); i++) {
