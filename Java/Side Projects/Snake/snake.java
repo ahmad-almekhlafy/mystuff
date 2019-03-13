@@ -133,6 +133,10 @@ public class snake {
 
 			snake.add(new BodyPart(xCoor, yCoor, 10));
 			repaint();
+			// Fixing lagging if OS is linux
+			if (System.getProperty("os.name").equals("Linux")) {
+				Toolkit.getDefaultToolkit().sync();
+			}
 		}
 
 		public void keyPressed(KeyEvent e) {

@@ -189,6 +189,11 @@ class Maze extends JPanel implements ActionListener, MouseMotionListener {
                 }
             }
             repaint();
+
+            // Fixing lagging if OS is linux
+            if (System.getProperty("os.name").equals("Linux")) {
+                Toolkit.getDefaultToolkit().sync();
+            }
         }
 
     }
