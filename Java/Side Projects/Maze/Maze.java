@@ -4,6 +4,7 @@ import java.util.Stack;
 import java.util.Random;
 import javax.swing.*;
 import java.awt.event.*;
+import java.io.*;
 
 class Maze extends JPanel implements ActionListener, MouseMotionListener {
     static final int cellSize = 20;
@@ -22,7 +23,8 @@ class Maze extends JPanel implements ActionListener, MouseMotionListener {
     JMenuItem solveMaze = new JMenuItem("Solve");
     JMenuItem findPath = new JMenuItem("Find a path from cell x to cell y");
     JMenuItem newMaze = new JMenuItem("Gen. New Maze");
-
+    JMenuItem saveMaze = new JMenuItem("Save Maze");
+    JMenuItem loadMaze = new JMenuItem("Load Maze");
     ArrayList<wall> walls = new ArrayList<>();
     ArrayList<cell> cells = new ArrayList<>();
     Stack<cell> stack = new Stack<cell>(); // used for generating mazes
@@ -33,6 +35,12 @@ class Maze extends JPanel implements ActionListener, MouseMotionListener {
     JTextField cell2 = new JTextField();
 
     public static void main(String[] args) {
+        // makes UI look cool
+        /*
+         * try { UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName()); }
+         * catch (Exception x) { ex.printStackTrace(); }
+         */
+
         new Maze();
     }
 
@@ -45,17 +53,21 @@ class Maze extends JPanel implements ActionListener, MouseMotionListener {
 
         // Configuring the menu and the tooltip
         menu.add(solveMaze);
-        menu.add(newMaze);
         menu.add(findPath);
+        menu.add(newMaze);
+        menu.add(saveMaze);
+        menu.add(loadMaze);
         menuBar.add(menu);
         frame.setJMenuBar(menuBar);
         JToolTip cellId = new JToolTip();
         frame.add(cellId);
 
         // Adding this panel as a listener to different components
-        newMaze.addActionListener(this);
         solveMaze.addActionListener(this);
         findPath.addActionListener(this);
+        newMaze.addActionListener(this);
+        saveMaze.addActionListener(this);
+        loadMaze.addActionListener(this);
         this.addMouseMotionListener(this);
 
         // Showing frame
@@ -125,6 +137,138 @@ class Maze extends JPanel implements ActionListener, MouseMotionListener {
             stack.push(cells.get(startId));
             menu.setEnabled(false);
             timer.start();
+
+        } else if (e.getActionCommand() == (("Save Maze"))) {
+            try {
+
+                FileDialog saveFileDialog = new FileDialog(frame, "Save Maze as .mze File ...", FileDialog.SAVE);
+                saveFileDialog.saveFileDialog.setVisible(true);
+
+                if (((saveFileDialog.getDirectory() != null) && (saveFileDialog.getFile() != null))) {
+                    File savedFile = new File(saveFileDialog.getDirectory() + saveFileDialog.getFile() + ".mze");
+                    FileWriter writer = new FileWriter(savedFile);
+                    writer.write(height * width * cellSize * wallSize + "\n");
+
+                    for (int i = 0; i < cells.size(); i++) {
+
+                        writer.write("c" + i + ": ");
+                        if (cells.get(i).firstVisit) {
+                            writer.write("1");
+                        } else {
+                            writer.write("0");
+                        }
+
+                        if (cells.get(i).secondVisit) {
+                            writer.write("1");
+                        } else {
+                            writer.write("0");
+                        }
+                        writer.write("\n");
+                    }
+
+                    for (int i = 0; i < walls.size(); i++) {
+
+                        if (walls.get(i) != null) {
+                            writer.write("w" + i + ": ");
+
+                            if (walls.get(i).isVisited) {
+                                writer.write("1");
+                            } else {
+                                writer.write("0");
+                            }
+
+                            if (walls.get(i).isBroken) {
+                                writer.write("1");
+                            } else {
+                                writer.write("0");
+                            }
+
+                            writer.write("\n");
+                        }
+                    }
+
+                    writer.close();
+                }
+            }
+
+            catch (Exception x) {
+
+            }
+
+        } else if (e.getActionCommand() == (("Load Maze"))) {
+            try {
+
+                // One could use swing like in the following line, but it doesn't look pretty :3
+                // JFileChooser fileChooser = new JFileChooser();
+
+                FileDialog openFileDialog = new FileDialog(frame, "Choose a .mze File ...", FileDialog.LOAD);
+
+                openFileDialog.setFilenameFilter(new FilenameFilter() {
+                    public boolean accept(File dir, String name) {
+                        if (name.toLowerCase().endsWith(".mze")) {
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    }
+                });
+
+                openFileDialog.setVisible(true);
+                File loadedFile = new File(openFileDialog.getDirectory() + openFileDialog.getFile());
+
+                FileReader fileReader = new FileReader(loadedFile);
+                BufferedReader bufferedReader = new BufferedReader(fileReader);
+                String nextLine = bufferedReader.readLine();
+                if (nextLine.equals(Integer.toString(height * width * cellSize * wallSize))) {
+                    while ((nextLine = bufferedReader.readLine()) != null) {
+
+                        if (nextLine.charAt(0) == 'c') {
+                            int index = Integer.parseInt((nextLine.substring(1, nextLine.indexOf(':'))));
+                            int begin = nextLine.indexOf(' ');
+                            if (nextLine.charAt(begin + 1) == '1') {
+                                cells.get(index).firstVisit = true;
+                            } else {
+                                cells.get(index).firstVisit = false;
+                            }
+
+                            if (nextLine.charAt(begin + 2) == '1') {
+                                cells.get(index).secondVisit = true;
+                            } else {
+                                cells.get(index).secondVisit = false;
+                            }
+                        } else if (nextLine.charAt(0) == 'w') {
+                            int index = Integer.parseInt((nextLine.substring(1, nextLine.indexOf(':'))));
+                            int begin = nextLine.indexOf(' ');
+                            if (nextLine.charAt(begin + 1) == '1') {
+                                walls.get(index).isVisited = true;
+                            } else {
+                                walls.get(index).isVisited = false;
+                            }
+
+                            if (nextLine.charAt(begin + 2) == '1') {
+                                walls.get(index).isBroken = true;
+                            } else {
+                                walls.get(index).isBroken = false;
+                            }
+                        }
+
+                    }
+
+                    bufferedReader.close();
+
+                    repaint();
+
+                } else {
+                    JOptionPane errorMessage = new JOptionPane();
+                    errorMessage.showMessageDialog(frame,
+                            "The selected maze file doesn't have the appropriate measurements", "Error!",
+                            JOptionPane.ERROR_MESSAGE);
+                }
+            }
+
+            catch (Exception x) {
+
+            }
 
         } else if ((e.getActionCommand() == (("Find a path from cell x to cell y"))
                 || (e.getActionCommand() == ("Solve")))) {
