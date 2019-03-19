@@ -7,28 +7,37 @@ import java.awt.event.*;
 import java.io.*;
 
 class Maze extends JPanel implements ActionListener, MouseMotionListener {
-    static final int cellSize = 20;
-    static final int wallSize = 10;
-    static final int height = (500 / (cellSize + wallSize)) * (cellSize + wallSize);
-    static final int width = (900 / (cellSize + wallSize)) * (cellSize + wallSize);
+    // Default values
+    int cellSize = 20;
+    int wallSize = 15;
+    int speed = 0;
+    Color mainColor = Color.BLACK;
+    Color foundedPathColor = new Color(0, 153, 0); // green
+    Color topCellColor = new Color(255, 51, 51); // red
 
+    int height = (500 / (cellSize + wallSize)) * (cellSize + wallSize);
+    int width = (900 / (cellSize + wallSize)) * (cellSize + wallSize);
     int cellsPerRow = width / (cellSize + wallSize);
     int numOfRows = height / (cellSize + wallSize);
-    Timer timer = new Timer(30, this);
+    Timer timer = new Timer(speed, this);
     Random r = new Random();
+    JOptionPane errorMessage = new JOptionPane();
 
     JFrame frame = new JFrame("Maze");
     JMenuBar menuBar = new JMenuBar();
-    JMenu menu = new JMenu("Do...");
+    JMenu doMenu = new JMenu("Do...");
+
     JMenuItem solveMaze = new JMenuItem("Solve");
     JMenuItem findPath = new JMenuItem("Find a path from cell x to cell y");
     JMenuItem newMaze = new JMenuItem("Gen. New Maze");
     JMenuItem saveMaze = new JMenuItem("Save Maze");
     JMenuItem loadMaze = new JMenuItem("Load Maze");
+    JMenuItem customizeStuff = new JMenuItem("Customize Colors and Stuff");
+
     ArrayList<wall> walls = new ArrayList<>();
     ArrayList<cell> cells = new ArrayList<>();
-    Stack<cell> stack = new Stack<cell>(); // used for generating mazes
-    Stack<cell> stack2 = new Stack<cell>(); // used for solving mazes
+    Stack<cell> generatingStack = new Stack<cell>(); // used for generating mazes
+    Stack<cell> solvingStack = new Stack<cell>(); // used for solving mazes
 
     int startId;
     JTextField cell1 = new JTextField();
@@ -52,12 +61,13 @@ class Maze extends JPanel implements ActionListener, MouseMotionListener {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         // Configuring the menu and the tooltip
-        menu.add(solveMaze);
-        menu.add(findPath);
-        menu.add(newMaze);
-        menu.add(saveMaze);
-        menu.add(loadMaze);
-        menuBar.add(menu);
+        doMenu.add(solveMaze);
+        doMenu.add(findPath);
+        doMenu.add(newMaze);
+        doMenu.add(saveMaze);
+        doMenu.add(loadMaze);
+        doMenu.add(customizeStuff);
+        menuBar.add(doMenu);
         frame.setJMenuBar(menuBar);
         JToolTip cellId = new JToolTip();
         frame.add(cellId);
@@ -68,6 +78,7 @@ class Maze extends JPanel implements ActionListener, MouseMotionListener {
         newMaze.addActionListener(this);
         saveMaze.addActionListener(this);
         loadMaze.addActionListener(this);
+        customizeStuff.addActionListener(this);
         this.addMouseMotionListener(this);
 
         // Showing frame
@@ -108,18 +119,49 @@ class Maze extends JPanel implements ActionListener, MouseMotionListener {
             cells.get(i).lookForNeighbors();
 
         // choose a random cell and start the depth first search with it being the cell
-        // at the top of the stack
+        // at the top of the generatingStack
         startId = r.nextInt(cells.size());
         cells.get(startId).firstVisit = true;
-        stack.push(cells.get(startId));
-        menu.setEnabled(false);
+        generatingStack.push(cells.get(startId));
+        doMenu.setEnabled(false);
         timer.start();
     }
 
     public void actionPerformed(ActionEvent e) {
 
-        if (e.getActionCommand() == (("Gen. New Maze"))) {
-            stack2 = new Stack<cell>();
+        if (e.getActionCommand() == (("Customize Colors and Stuff"))) {
+
+            JTextField speed = new JTextField();
+            JColorChooser mainColorChooser = new JColorChooser();
+            JColorChooser topCellColorChooser = new JColorChooser();
+            JColorChooser foundedPathColorChooser = new JColorChooser();
+
+            mainColorChooser.setPreviewPanel(new JPanel());
+            topCellColorChooser.setPreviewPanel(new JPanel());
+            foundedPathColorChooser.setPreviewPanel(new JPanel());
+
+            Object[] message = { "Speed:", speed, "Main Color:", mainColorChooser, "Top Cell's Color:",
+                    topCellColorChooser, "Founded Path Color:", foundedPathColorChooser };
+            JOptionPane customizationWindow = new JOptionPane(message);
+            customizationWindow.showConfirmDialog(this, message, "Customize ...", customizationWindow.OK_CANCEL_OPTION);
+
+            try {
+                if (mainColorChooser.getColor() != Color.white)
+                    mainColor = mainColorChooser.getColor();
+                if (topCellColorChooser.getColor() != Color.white)
+                    topCellColor = topCellColorChooser.getColor();
+                if (foundedPathColorChooser.getColor() != Color.white)
+                    foundedPathColor = foundedPathColorChooser.getColor();
+                timer.setDelay(Integer.parseInt(speed.getText()));
+
+            } catch (NumberFormatException c) {
+                if (!speed.getText().equals(""))
+                    errorMessage.showMessageDialog(frame, "The speed entered isn't valid! It won't be changed.",
+                            "Error!", JOptionPane.ERROR_MESSAGE);
+            }
+
+        } else if (e.getActionCommand() == (("Gen. New Maze"))) {
+            solvingStack = new Stack<cell>();
 
             cells.forEach((n) -> {
                 n.firstVisit = false;
@@ -134,15 +176,15 @@ class Maze extends JPanel implements ActionListener, MouseMotionListener {
             });
 
             startId = r.nextInt(cells.size());
-            stack.push(cells.get(startId));
-            menu.setEnabled(false);
+            generatingStack.push(cells.get(startId));
+            doMenu.setEnabled(false);
             timer.start();
 
         } else if (e.getActionCommand() == (("Save Maze"))) {
             try {
 
                 FileDialog saveFileDialog = new FileDialog(frame, "Save Maze as .mze File ...", FileDialog.SAVE);
-                saveFileDialog.saveFileDialog.setVisible(true);
+                saveFileDialog.setVisible(true);
 
                 if (((saveFileDialog.getDirectory() != null) && (saveFileDialog.getFile() != null))) {
                     File savedFile = new File(saveFileDialog.getDirectory() + saveFileDialog.getFile() + ".mze");
@@ -259,7 +301,7 @@ class Maze extends JPanel implements ActionListener, MouseMotionListener {
                     repaint();
 
                 } else {
-                    JOptionPane errorMessage = new JOptionPane();
+
                     errorMessage.showMessageDialog(frame,
                             "The selected maze file doesn't have the appropriate measurements", "Error!",
                             JOptionPane.ERROR_MESSAGE);
@@ -270,66 +312,87 @@ class Maze extends JPanel implements ActionListener, MouseMotionListener {
 
             }
 
+            // find a path... and solve are to summed together in one condition because they
+            // do basically the same thing
         } else if ((e.getActionCommand() == (("Find a path from cell x to cell y"))
                 || (e.getActionCommand() == ("Solve")))) {
 
-            if (!(e.getActionCommand() == ("Solve"))) {
-                Object[] message = { "Start Cell:", cell1, "Destination Cell:", cell2 };
-                JOptionPane input = new JOptionPane(message);
-                input.showConfirmDialog(this, message, "Enter Cells' Numbers:", JOptionPane.OK_CANCEL_OPTION);
+            Object[] message = { "Start Cell:", cell1, "Destination Cell:", cell2 };
+            JOptionPane input = new JOptionPane(message);
+            int selectedOption = -1;
+
+            if ((e.getActionCommand() == ("Find a path from cell x to cell y"))) {
+                cell1.setText("");
+                cell2.setText("");
+                selectedOption = input.showConfirmDialog(this, message, "Enter Cells' Numbers:",
+                        JOptionPane.OK_CANCEL_OPTION);
             } else {
+                selectedOption = 0;
                 cell1.setText("0");
                 cell2.setText(Integer.toString(numOfRows * cellsPerRow - 1)); // Set cell2 to be the last cell
             }
 
-            if ((!cell1.getText().isEmpty()) && (!cell2.getText().isEmpty())) {
-                cell startCell = cells.get(Integer.parseInt(cell1.getText()));
+            // try-catch is used to prevent either having a non-integer input or having an
+            // invalid integer input
+            try {
+                if ((selectedOption == 0) && ((Integer.parseInt(cell1.getText()) > (numOfRows * cellsPerRow - 1))
+                        || (Integer.parseInt(cell1.getText()) < 0)
+                        || (Integer.parseInt(cell2.getText()) > (numOfRows * cellsPerRow - 1))
+                        || (Integer.parseInt(cell2.getText()) < 0))) {
+                    throw new Exception();
+                } else if ((selectedOption == 0)) {
+                    cell startCell = cells.get(Integer.parseInt(cell1.getText()));
+                    cells.forEach((n) -> {
+                        n.firstVisit = false;
+                        n.secondVisit = true;
+                    });
 
-                cells.forEach((n) -> {
-                    n.firstVisit = false;
-                    n.secondVisit = true;
-                });
+                    walls.forEach((n) -> {
+                        if (n != null)
+                            n.isVisited = false;
+                    });
 
-                walls.forEach((n) -> {
-                    if (n != null)
-                        n.isVisited = false;
-                });
+                    startCell.firstVisit = true;
+                    solvingStack.push(startCell);
+                    doMenu.setEnabled(false);
+                    timer.start();
+                }
 
-                startCell.firstVisit = true;
-                stack2.push(startCell);
-                menu.setEnabled(false);
-                timer.start();
             }
 
-        } else { // if timer is running
+            catch (Exception c) {
+                errorMessage.showMessageDialog(frame, "Input isn't valid!", "Error!", JOptionPane.ERROR_MESSAGE);
+            }
+
+        } else {
 
             // if a maze is being generated
-            if (!stack.isEmpty()) {
-                cell nextCell = stack.peek().visitRandomNeighbor();
-                if (nextCell.id == stack.peek().id) {
-                    stack.pop();
+            if (!generatingStack.isEmpty()) {
+                cell nextCell = generatingStack.peek().visitRandomNeighbor();
+                if (nextCell.id == generatingStack.peek().id) {
+                    generatingStack.pop();
                 } else {
-                    stack.push(nextCell);
+                    generatingStack.push(nextCell);
                 }
             }
 
             // if a maze is being solved
-            if (!stack2.isEmpty()) {
-                cell nextCell = stack2.peek().visitConnectedNeighbor();
-                if (nextCell.id == stack2.peek().id) {
-                    stack2.peek().secondVisit = false;
-                    stack2.peek().getWall(stack2.get(stack2.size() - 2).id).isVisited = false;
-                    stack2.pop();
+            if (!solvingStack.isEmpty()) {
+                cell nextCell = solvingStack.peek().visitConnectedNeighbor();
+                if (nextCell.id == solvingStack.peek().id) {
+                    solvingStack.peek().secondVisit = false;
+                    solvingStack.peek().getWall(solvingStack.get(solvingStack.size() - 2).id).isVisited = false;
+                    solvingStack.pop();
 
                 } else if (nextCell.id == cells.get(Integer.parseInt(cell2.getText())).id) {
-                    stack2.push(nextCell);
+                    solvingStack.push(nextCell);
                     cell1 = new JTextField();
                     cell2 = new JTextField();
-                    menu.setEnabled(true);
+                    doMenu.setEnabled(true);
                     timer.stop();
 
                 } else {
-                    stack2.push(nextCell);
+                    solvingStack.push(nextCell);
                 }
             }
             repaint();
@@ -344,7 +407,7 @@ class Maze extends JPanel implements ActionListener, MouseMotionListener {
 
     public void paintComponent(Graphics g) {
 
-        g.setColor(Color.BLACK);
+        g.setColor(mainColor);
         g.fillRect(0, 0, width - wallSize, height - wallSize);
 
         cells.forEach((n) -> n.draw(g));
@@ -355,17 +418,18 @@ class Maze extends JPanel implements ActionListener, MouseMotionListener {
 
         });
 
-        // color the cell at the top of the stack with the color red, so it looks cool
+        // color the cell at the top of the generatingStack with a certain color
+        // (default: red), so it looks cool
         // and we know what is actually happening
-        if (!stack.isEmpty()) {
-            g.setColor(new Color(255, 51, 51));
-            g.fillRect(stack.peek().xCoor, stack.peek().yCoor, cellSize, cellSize);
+        if (!generatingStack.isEmpty()) {
+            g.setColor(topCellColor);
+            g.fillRect(generatingStack.peek().xCoor, generatingStack.peek().yCoor, cellSize, cellSize);
         }
 
         // if both stacks are empty (nothing is being done), stop timer, so that
         // unnecessary actions fired by it are no longer fired
-        if ((stack.isEmpty()) && (stack2.isEmpty()) && timer.isRunning()) {
-            menu.setEnabled(true);
+        if ((generatingStack.isEmpty()) && (solvingStack.isEmpty()) && timer.isRunning()) {
+            doMenu.setEnabled(true);
             timer.stop();
         }
 
@@ -463,10 +527,10 @@ class Maze extends JPanel implements ActionListener, MouseMotionListener {
                 g.setColor(Color.WHITE);
 
             } else if ((firstVisit) && (secondVisit)) {
-                g.setColor(new Color(0, 153, 0));
+                g.setColor(foundedPathColor);
 
             } else if ((!firstVisit) && (!secondVisit)) {
-                g.setColor(Color.BLACK);
+                g.setColor(mainColor);
 
             } else if ((!firstVisit) && (secondVisit)) {
                 g.setColor(Color.WHITE);
@@ -518,10 +582,10 @@ class Maze extends JPanel implements ActionListener, MouseMotionListener {
                 g.setColor(Color.WHITE);
                 g.fillRect(xCoor, yCoor, cellSize, size);
             } else if ((isVertical) && (isBroken) && (isVisited)) {
-                g.setColor(new Color(0, 153, 0));
+                g.setColor(foundedPathColor);
                 g.fillRect(xCoor, yCoor, size, cellSize);
             } else if ((!isVertical) && (isBroken) && (isVisited)) {
-                g.setColor(new Color(0, 153, 0));
+                g.setColor(foundedPathColor);
                 g.fillRect(xCoor, yCoor, cellSize, size);
             }
         }
