@@ -5,16 +5,25 @@ import javax.swing.Timer;
 import java.awt.event.*;
 import java.util.*;
 
-class minesweeper extends JPanel implements ActionListener, MouseListener, MouseMotionListener {
-    int cellSize = 20;
-    int frameHeight = 390;
-    int frameWidth = 300;
-    int difficulty = 1;
+class minesweeper {
 
-    int playFieldHeight = ((frameHeight - 70) / cellSize) * cellSize;
-    int PlayFieldWidth = ((frameWidth - 20) / cellSize) * cellSize;
-    int cellsPerRow = PlayFieldWidth / cellSize;
-    int numOfRows = playFieldHeight / cellSize;
+    public static void main(String[] args) {
+        optionDialog optionDialog = new optionDialog();
+        mainDialog mainDialog = new mainDialog(12, 11, 10, optionDialog);
+        optionDialog.mainDialog = mainDialog;
+
+    }
+}
+
+class mainDialog extends JPanel implements ActionListener, MouseListener, MouseMotionListener {
+    int cellSize = 20;
+    int frameHeight;
+    int frameWidth;
+
+    int playFieldHeight;
+    int playFieldWidth;
+    int cellsPerRow;
+    int numOfRows;
 
     Random r = new Random();
     Timer timer = new Timer(20, this);
@@ -22,25 +31,68 @@ class minesweeper extends JPanel implements ActionListener, MouseListener, Mouse
     int secondsCounter;
 
     JFrame frame = new JFrame("Minesweeper");
-    JButton newGame = new JButton();
+    JButton newGameButton = new JButton();
+
+    JPanel timePanel = new JPanel();
+    JPanel numOfMinesPanel = new JPanel();
+
+    JMenuBar menuBar = new JMenuBar();
+    JMenu gameMenu = new JMenu("Game");
+    JMenuItem newGameMenuItem = new JMenuItem("New Game");
+    JMenuItem statsMenuItem = new JMenuItem("Statistics");
+    JMenuItem optionsMenuItem = new JMenuItem("Options");
+
+    JLabel timeLabel;
+    JLabel minesLabel;
     ArrayList<cell> cells = new ArrayList<>();
+    optionDialog optionDialog;
 
-    public static void main(String[] args) {
-        new minesweeper();
-    }
+    mainDialog(int numOfRows, int cellsPerRow, int numOfMines, optionDialog optionDialog) {
 
-    minesweeper() {
+        frameHeight = numOfRows * cellSize + 70;
+        frameWidth = cellsPerRow * cellSize + 20;
+        playFieldHeight = numOfRows * cellSize;
+        playFieldWidth = cellsPerRow * cellSize;
+        this.cellsPerRow = cellsPerRow;
+        this.numOfRows = numOfRows;
+        this.numOfMines = numOfMines;
+        this.optionDialog = optionDialog;
+
         setPreferredSize(new Dimension(frameWidth, frameHeight));
         frame.setResizable(false);
         frame.setContentPane(this);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(null);
 
-        newGame.setSize(30, 30);
-        newGame.setLocation(frameWidth / 2 - 15, 20);
+        newGameButton.setSize(30, 30);
+        newGameButton.setLocation(frameWidth / 2 - 15, 20);
 
-        frame.add(newGame);
-        newGame.addActionListener(this);
+        timePanel.setOpaque(true);
+        timePanel.setBackground(Color.BLACK);
+
+        numOfMinesPanel.setOpaque(true);
+        numOfMinesPanel.setBackground(Color.BLACK);
+
+        timePanel.setSize(40, 30);
+        numOfMinesPanel.setSize(40, 30);
+
+        timePanel.setLocation(playFieldWidth - 29, 20);
+        numOfMinesPanel.setLocation(9, 20);
+
+        gameMenu.add(newGameMenuItem);
+        gameMenu.addSeparator();
+        gameMenu.add(statsMenuItem);
+        gameMenu.add(optionsMenuItem);
+        menuBar.add(gameMenu);
+
+        frame.setJMenuBar(menuBar);
+        frame.add(timePanel);
+        frame.add(numOfMinesPanel);
+        frame.add(newGameButton);
+
+        newGameButton.addActionListener(this);
+        newGameMenuItem.addActionListener(this);
+        optionsMenuItem.addActionListener(this);
         this.addMouseListener(this);
         this.addMouseMotionListener(this);
 
@@ -48,12 +100,17 @@ class minesweeper extends JPanel implements ActionListener, MouseListener, Mouse
         // difficulty means more mines will be added
         for (int h = 0; h < numOfRows; h++) {
             for (int w = 0; w < cellsPerRow; w++) {
-                if ((r.nextInt(100) < (10 + 3 * difficulty))) {
-                    cells.add(new cell(cells.size(), (w * cellSize) + 10, (h * cellSize) + 60, cellSize, true));
-                    numOfMines++;
-                } else {
-                    cells.add(new cell(cells.size(), (w * cellSize) + 10, (h * cellSize) + 60, cellSize, false));
-                }
+                cells.add(new cell(cells.size(), (w * cellSize) + 10, (h * cellSize) + 60, cellSize, false));
+            }
+        }
+
+        for (int i = 0; i < this.numOfMines;) {
+            int cellId = r.nextInt(cells.size());
+            if (!cells.get(cellId).isMine) {
+                cells.get(cellId).isMine = true;
+                i++;
+            } else {
+                cellId = r.nextInt(cells.size());
             }
         }
 
@@ -61,8 +118,26 @@ class minesweeper extends JPanel implements ActionListener, MouseListener, Mouse
             n.findNeighbors();
         });
 
+        timeLabel = new JLabel("0", JLabel.CENTER);
+        minesLabel = new JLabel(Integer.toString(numOfMines), JLabel.CENTER);
+
+        timeLabel.setForeground(Color.red);
+        minesLabel.setForeground(Color.red);
+
+        if (System.getProperty("os.name").equals("Linux")) {
+            timeLabel.setFont(new Font("Ubuntu", Font.BOLD, 15));
+            minesLabel.setFont(new Font("Ubuntu", Font.BOLD, 15));
+        } else {
+            timeLabel.setFont(new Font("Arial", Font.PLAIN, 15));
+            minesLabel.setFont(new Font("Arial", Font.BOLD, 15));
+        }
+
+        timePanel.add(timeLabel);
+        numOfMinesPanel.add(minesLabel);
+
         timer.start();
         frame.pack();
+        frame.setLocationRelativeTo(null);
         frame.setVisible(true);
 
     }
@@ -70,31 +145,39 @@ class minesweeper extends JPanel implements ActionListener, MouseListener, Mouse
     @Override
     public void actionPerformed(ActionEvent e) {
         // Clear all fields and start a new game
-        if (e.getSource() == newGame) {
+        if ((e.getSource() == newGameButton) || (e.getSource() == newGameMenuItem)) {
 
-            numOfMines = 0;
             secondsCounter = 0;
-
             cells = new ArrayList<>();
+
             for (int h = 0; h < numOfRows; h++) {
                 for (int w = 0; w < cellsPerRow; w++) {
-                    if ((r.nextInt(100) < (10 + 3 * difficulty))) {
-                        cells.add(new cell(cells.size(), (w * cellSize) + 10, (h * cellSize) + 60, cellSize, true));
-                        numOfMines++;
-                    } else {
-                        cells.add(new cell(cells.size(), (w * cellSize) + 10, (h * cellSize) + 60, cellSize, false));
-                    }
+                    cells.add(new cell(cells.size(), (w * cellSize) + 10, (h * cellSize) + 60, cellSize, false));
                 }
             }
 
+            for (int i = 0; i < this.numOfMines;) {
+                int cellId = r.nextInt(cells.size());
+                if (!cells.get(cellId).isMine) {
+                    cells.get(cellId).isMine = true;
+                    i++;
+                } else {
+                    cellId = r.nextInt(cells.size());
+                }
+            }
             cells.forEach(n -> {
                 n.findNeighbors();
             });
 
+            minesLabel.setText(Integer.toString(numOfMines));
+
             timer.start();
 
+        } else if (e.getSource() == optionsMenuItem) {
+            optionDialog.setVisible(true);
         } else {
             secondsCounter += 20;
+            timeLabel.setText(Integer.toString(secondsCounter / 1000));
             repaint();
         }
     }
@@ -102,34 +185,13 @@ class minesweeper extends JPanel implements ActionListener, MouseListener, Mouse
     @Override
     protected void paintComponent(Graphics g) {
         // outline the playing field
-        g.drawRect(9, 59, PlayFieldWidth + 1, playFieldHeight + 1);
+        g.drawRect(9, 59, playFieldWidth + 1, playFieldHeight + 1);
 
         // draw the cells
         cells.forEach(n -> {
             n.draw(g);
         });
 
-        // draw two black boxes, one for time and one for mines' number
-        g.setColor(Color.BLACK);
-        g.fillRect(9, 20, 40, 30);
-        g.fillRect(PlayFieldWidth - 29, 20, 40, 30);
-
-        // draw time and mines' number
-        g.setColor(Color.red);
-        if (System.getProperty("os.name").equals("Linux")) {
-            g.setFont(new Font("Ubuntu", Font.BOLD, 20));
-        } else {
-            g.setFont(new Font("Arial", Font.BOLD, 20));
-        }
-        g.drawString(Integer.toString(numOfMines), 19, 42);
-
-        if ((secondsCounter / 1000) < 10) {
-            g.drawString(Integer.toString(secondsCounter / 1000), PlayFieldWidth - 15, 42);
-        } else if ((secondsCounter / 1000) < 100) {
-            g.drawString(Integer.toString(secondsCounter / 1000), PlayFieldWidth - 19, 42);
-        } else {
-            g.drawString(Integer.toString(secondsCounter / 1000), PlayFieldWidth - 25, 42);
-        }
     }
 
     @Override
@@ -164,9 +226,10 @@ class minesweeper extends JPanel implements ActionListener, MouseListener, Mouse
 
                 if (cells.get(cellId).isMarked) {
                     cells.get(cellId).isMarked = false;
-                    numOfMines++;
+                    minesLabel.setText(Integer.toString(Integer.parseInt(minesLabel.getText()) + 1));
+
                 } else {
-                    numOfMines--;
+                    minesLabel.setText(Integer.toString(Integer.parseInt(minesLabel.getText()) - 1));
                     cells.get(cellId).isMarked = true;
                 }
 
@@ -215,7 +278,7 @@ class minesweeper extends JPanel implements ActionListener, MouseListener, Mouse
     // a function the returns using only the location of the mouse cursor
     public int getCellId(Point mouseLocation) {
 
-        if ((mouseLocation.x > 10) && (mouseLocation.x < PlayFieldWidth + 10) && (mouseLocation.y > 60)
+        if ((mouseLocation.x > 10) && (mouseLocation.x < playFieldWidth + 10) && (mouseLocation.y > 60)
                 && (mouseLocation.y < 60 + playFieldHeight)) {
             int cellX = (mouseLocation.x - 10) / cellSize;
             int cellY = (mouseLocation.y - 60) / cellSize;
@@ -357,6 +420,129 @@ class minesweeper extends JPanel implements ActionListener, MouseListener, Mouse
                     adjacentMines++;
             });
         }
+
+    }
+}
+
+class optionDialog extends JDialog implements ActionListener, WindowListener {
+
+    JRadioButton beginnerButton = new JRadioButton("Beginner (10 mines, 12 x 11 tile grid)", true);
+    JRadioButton intermediateButton = new JRadioButton("Intermediate (40 mines, 16 x 16 tile grid)");
+    JRadioButton advancedButton = new JRadioButton("Advanced (99 mines, 16 x 30 tile grid)");
+    JRadioButton customButton = new JRadioButton("Custom:");
+    ButtonGroup buttonGroup = new ButtonGroup();
+    JPanel radioPanel = new JPanel();
+    JPanel customPanel = new JPanel();
+    JLabel height = new JLabel("Height:");
+    JTextField heightField = new JTextField(3);
+
+    JLabel width = new JLabel("Width:");
+    JTextField widthField = new JTextField(3);
+
+    JLabel mines = new JLabel("Mines:");
+    JTextField minesField = new JTextField(3);
+    mainDialog mainDialog;
+
+    optionDialog() {
+
+        beginnerButton.addActionListener(this);
+        intermediateButton.addActionListener(this);
+        advancedButton.addActionListener(this);
+        customButton.addActionListener(this);
+
+        buttonGroup.add(beginnerButton);
+        buttonGroup.add(intermediateButton);
+        buttonGroup.add(advancedButton);
+        buttonGroup.add(customButton);
+
+        customPanel.add(height);
+        customPanel.add(heightField);
+        customPanel.add(width);
+        customPanel.add(widthField);
+        customPanel.add(mines);
+        customPanel.add(minesField);
+
+        for (Component component : customPanel.getComponents()) {
+            component.setEnabled(false);
+        }
+
+        radioPanel.setLayout(new GridLayout(5, 1));
+        radioPanel.add(beginnerButton);
+        radioPanel.add(intermediateButton);
+        radioPanel.add(advancedButton);
+        radioPanel.add(customButton);
+        radioPanel.add(customPanel);
+
+        radioPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Difficulty"));
+
+        setContentPane(radioPanel);
+
+        setTitle("Options");
+        addWindowListener(this);
+        setLocationRelativeTo(null);
+        pack();
+
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        for (Component component : customPanel.getComponents()) {
+            component.setEnabled(false);
+        }
+
+        if (e.getSource() == customButton) {
+            for (Component component : customPanel.getComponents()) {
+                component.setEnabled(true);
+            }
+        }
+
+    }
+
+    @Override
+    public void windowOpened(WindowEvent e) {
+
+    }
+
+    @Override
+    public void windowIconified(WindowEvent e) {
+
+    }
+
+    @Override
+    public void windowDeiconified(WindowEvent e) {
+
+    }
+
+    @Override
+    public void windowDeactivated(WindowEvent e) {
+
+    }
+
+    @Override
+    public void windowClosing(WindowEvent e) {
+        if (beginnerButton.isSelected()) {
+            mainDialog.frame.dispose();
+            this.mainDialog = new mainDialog(12, 11, 10, this);
+        } else if (intermediateButton.isSelected()) {
+            mainDialog.frame.dispose();
+            this.mainDialog = new mainDialog(16, 16, 40, this);
+        } else if (advancedButton.isSelected()) {
+            mainDialog.frame.dispose();
+            this.mainDialog = new mainDialog(16, 30, 99, this);
+        } else {
+            mainDialog.frame.dispose();
+            this.mainDialog = new mainDialog(Integer.parseInt(heightField.getText()),
+                    Integer.parseInt(widthField.getText()), Integer.parseInt(minesField.getText()), this);
+        }
+    }
+
+    @Override
+    public void windowClosed(WindowEvent e) {
+
+    }
+
+    @Override
+    public void windowActivated(WindowEvent e) {
 
     }
 }
