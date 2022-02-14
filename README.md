@@ -1,1 +1,1 @@
-Well, the name of the repositry says it all, doesn't it?
+Well, the name of the repository says it all, doesn't it?
