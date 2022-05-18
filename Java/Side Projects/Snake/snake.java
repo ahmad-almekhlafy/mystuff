@@ -9,6 +9,7 @@ import javax.sound.sampled.*;
 public class snake {
 
 	public snake() {
+		// Configuring the frame/panel
 		JFrame frame = new JFrame("SNAKE");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		mainScreen panel = new mainScreen();
@@ -24,6 +25,7 @@ public class snake {
 	}
 
 	class mainScreen extends JPanel implements KeyListener, ActionListener {
+		// initializing values
 		Timer timer = new Timer(100, this);
 		int xCoor = 10;
 		int yCoor = 10;
@@ -43,16 +45,20 @@ public class snake {
 		}
 
 		public void paintComponent(Graphics g) {
+			// drawing the play field
 			g.clearRect(0, 0, 510, 520);
 			g.setColor(Color.BLACK);
 			g.fillRect(0, 0, 510, 520);
 			g.setColor(Color.GRAY);
 			g.drawRect(10, 20, 500, 500);
 
+			// drawing score
 			g.setColor(Color.GRAY);
 			Font f = new Font("Dialog", Font.PLAIN, 14);
 			g.setFont(f);
 			g.drawString("Score : " + score, 10, 15);
+
+			// drawing snake/apple
 			apple.draw(g);
 			for (int i = 0; i < snake.size(); i++) {
 				snake.get(i).draw(g);
@@ -60,8 +66,11 @@ public class snake {
 		}
 
 		public void actionPerformed(ActionEvent e) {
+			// this if-statement makes the snake move
 			if (snake.size() == size)
 				snake.remove(0);
+
+			// allows the snake to appear from the other side if it hits a wall
 			if (xCoor == 50 && right) {
 				xCoor = 0;
 			} else if (xCoor == 1 && left) {
@@ -71,6 +80,9 @@ public class snake {
 			} else if (yCoor == 2 && up) {
 				yCoor = 52;
 			}
+
+			// if the snake eats the apple, increase its size and speed, create a new apple,
+			// and play a sound
 			if ((xCoor == apple.getxCoor()) && (yCoor == apple.getyCoor())) {
 				playSound("/sound1.wav");
 				apple.setxCoor(r.nextInt(49) + 1);
@@ -81,6 +93,7 @@ public class snake {
 					timer.setDelay(timer.getInitialDelay() - score * 5);
 			}
 
+			// adjust the coordinates of the next BodyPart according to the pressed key
 			if (right)
 				xCoor++;
 			if (left)
@@ -91,11 +104,14 @@ public class snake {
 				yCoor++;
 
 			for (int i = 0; i < snake.size(); i++) {
+				// if the head of the snake has the same coordinates as one of its BodyParts,
+				// stop the game, the game is lost
 				if (xCoor == snake.get(i).getxCoor() && (yCoor == snake.get(i).getyCoor())) {
 					playSound("/sound2.wav");
 					timer.stop();
-					JOptionPane endDialog = new JOptionPane();
 
+					// show a dialog asking the player wether he/she wants to play again
+					JOptionPane endDialog = new JOptionPane();
 					if ((endDialog.showConfirmDialog(this,
 							"You lost!\nYour score: " + score + "\nDo you want to play again?", "The End",
 							JOptionPane.YES_NO_OPTION) == 1)) {
@@ -117,6 +133,10 @@ public class snake {
 
 			snake.add(new BodyPart(xCoor, yCoor, 10));
 			repaint();
+			// Fixing lagging if OS is linux
+			if (System.getProperty("os.name").equals("Linux")) {
+				Toolkit.getDefaultToolkit().sync();
+			}
 		}
 
 		public void keyPressed(KeyEvent e) {
@@ -142,7 +162,6 @@ public class snake {
 				right = false;
 				down = true;
 			}
-
 		}
 
 		public void keyReleased(KeyEvent e) {
@@ -155,7 +174,7 @@ public class snake {
 
 		public void playSound(String path) {
 			try {
-							
+
 				AudioInputStream audioIn = AudioSystem.getAudioInputStream(getClass().getResourceAsStream(path));
 				Clip clip = AudioSystem.getClip();
 				clip.open(audioIn);
